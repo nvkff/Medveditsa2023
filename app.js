@@ -1,7 +1,6 @@
 // 1. Инициализация карты
 const map = L.map('map', { zoomControl: window.innerWidth > 768 }).setView([57.25, 36.6], 10);
 
-// Топографическая подложка
 L.tileLayer('https://{s}.tile.opentopomap.org/{z}/{x}/{y}.png', {
     maxZoom: 17,
     attribution: '&copy; OpenTopoMap'
@@ -22,7 +21,7 @@ const gpxFiles = [
 let totalDistance = 0;
 const mapBounds = L.latLngBounds();
 
-// Загрузка GPX
+// Загрузка GPX (Красный цвет)
 gpxFiles.forEach(file => {
     new L.GPX(`./gpx/${file}`, {
         async: true,
@@ -39,12 +38,10 @@ gpxFiles.forEach(file => {
         
         mapBounds.extend(e.target.getBounds());
         map.fitBounds(mapBounds, { padding: [40, 40] });
-    }).on('error', function(err) {
-        console.error("Ошибка загрузки трека: " + file, err);
     }).addTo(map);
 });
 
-// --- КРАСИВЫЕ SVG ИКОНКИ ---
+// --- SVG ИКОНКИ ДЛЯ СТОЯНОК ---
 const svgTent = `<svg viewBox="0 0 24 24" width="24" height="24" fill="#ff2a2a" stroke="#111" stroke-width="1.5"><path d="M4 19h16L12 4z"/><path d="M12 4v15M9 14l3-5 3 5"/></svg>`;
 const svgRocket = `<svg viewBox="0 0 24 24" width="24" height="24" fill="#00ff66" stroke="#111" stroke-width="1.5"><path d="M12 2s4 4 4 9H8c0-5 4-9 4-9zM8 11v4c0 2 2 4 4 4s4-2 4-4v-4M4 21h16M12 15v4"/></svg>`;
 const svgFinish = `<svg viewBox="0 0 24 24" width="24" height="24" fill="#ffcc00" stroke="#111" stroke-width="1.5"><path d="M5 21V3h14l-3 4.5 3 4.5H5"/></svg>`;
@@ -58,96 +55,103 @@ function createCustomIcon(svgContent) {
     });
 }
 
-// --- ДАННЫЕ СТОЯНОК ---
+// Стоянки
 const camps = [
     { name: "Старт", lat: 57.272745, lng: 36.070653, icon: createCustomIcon(svgRocket) },
     { name: "1-я ночёвка", lat: 57.264138, lng: 36.100641, icon: createCustomIcon(svgTent) },
     { name: "2-я ночёвка (ГЭС)", lat: 57.228429, lng: 36.162023, icon: createCustomIcon(svgTent) },
     { name: "3-я ночёвка", lat: 57.182129, lng: 36.369453, icon: createCustomIcon(svgTent) },
-    { name: "4-я ночёвка", lat: 57.188709, mesh: 36.587510, lng: 36.587510, icon: createCustomIcon(svgTent) },
+    { name: "4-я ночёвка", lat: 57.188709, lng: 36.587510, icon: createCustomIcon(svgTent) },
     { name: "5-я ночёвка", lat: 57.271229, lng: 36.757921, icon: createCustomIcon(svgTent) },
     { name: "6-я ночёвка (лагерь)", lat: 57.302809, lng: 36.999370, icon: createCustomIcon(svgTent) },
     { name: "7-я ночёвка (финиш)", lat: 57.252630, lng: 37.149847, icon: createCustomIcon(svgFinish) }
 ];
 
-// Отрисовка стоянок с постоянными подписями
 camps.forEach(camp => {
     const marker = L.marker([camp.lat, camp.lng], { icon: camp.icon }).addTo(map);
-    
-    // Постоянная текстовая табличка поверх карты
-    marker.bindTooltip(camp.name, {
-        permanent: true,
-        direction: 'top',
-        className: 'map-permanent-label',
-        offset: [0, -10]
-    });
+    marker.bindTooltip(camp.name, { permanent: true, direction: 'top', className: 'map-permanent-label', offset: [0, -10] });
 
-    // При клике на точку — копируем её координаты в буфер обмена
     marker.on('click', () => {
         const coordsString = `${camp.lat}, ${camp.lng}`;
         navigator.clipboard.writeText(coordsString).then(() => {
             alert(`Координаты точки "${camp.name}" скопированы: \n${coordsString}`);
-        }).catch(err => {
-            console.error('Не удалось скопировать: ', err);
         });
     });
 });
 
-// --- СКОРОСТНАЯ ЗАГРУЗКА ПАНОРАМ (Последовательная) ---
-async function loadPanoramas() {
-    const thumbnailsContainer = document.getElementById('thumbnails');
-    const maxPhotosToCheck = 15; 
+// --- ДАННЫЕ ВАШИХ ПАНOРАМ ---
+const panoramasData = [
+    { file: "Dji_fly_20230702_182558_690_1718742537039_pano_optimized.jpg", lat: 57.271147, lng: 36.758015 },
+    { file: "dji_fly_20230703_202238_726_1718743208552_pano_optimized.jpg", lat: 57.302488, lng: 36.999095 },
+    { file: "dji_fly_20230704_112230_727_1718742538918_pano_optimized.jpg", lat: 57.301248, width: 37.003891, lng: 37.003891 },
+    { file: "dji_fly_20230704_112408_728_1718743206971_pano_optimized.jpg", lat: 57.302353, lng: 36.998754 },
+    { file: "dji_fly_20230701_200918_684_1718742535194_pano_optimized.jpg", lat: 58.741086, lng: 35.321689 },
+    { file: "dji_fly_20230701_200752_683_1718742533568_pano_optimized.jpg", lat: 58.739794, lng: 35.318858 },
+    { file: "dji_fly_20230701_075702_678_1718742531960_pano_optimized.jpg", lat: 58.740264, lng: 35.319525 },
+    { file: "dji_fly_20230701_075408_675_1718742507484_pano_optimized.jpg", lat: 58.738119, lng: 35.334064 },
+    { file: "dji_fly_20230629_210930_628_1718742455660_pano_optimized.jpg", lat: 58.591244, lng: 34.966039 },
+    { file: "dji_fly_20230628_211126_619_1718747835822_pano_optimized.jpg", lat: 58.552906, lng: 34.619097 },
+    { file: "dji_fly_20230628_171514_612_1718743637645_pano_optimized.jpg", lat: 58.530739, lng: 34.542017 }
+];
 
-    for (let i = 1; i <= maxPhotosToCheck; i++) {
-        const imgPath = `./panoramas/${i}.jpg`;
-        
-        try {
-            // fetch с методом HEAD проверяет существование файла до того, как exifr начнет его читать
-            const response = await fetch(imgPath, { method: 'HEAD' });
-            if (!response.ok) continue; // Если файла нет, сразу идем дальше
+// Кастомный маркер для фото-панорам (синий фотоаппарат в кружке)
+const photoIcon = L.divIcon({
+    className: 'custom-photo-icon',
+    html: `<div style="background: #222; border: 2px solid #4cabff; width: 14px; height: 14px; border-radius: 50%; box-shadow: 0 0 6px rgba(76,171,255,0.8);"></div>`,
+    iconSize: [14, 14],
+    iconAnchor: [7, 7]
+});
 
-            let gps = await exifr.gps(imgPath);
-            
-            if (gps && gps.latitude && gps.longitude) {
-                const { latitude, longitude } = gps;
-                const marker = L.marker([latitude, longitude]).addTo(map);
-                
-                const popupContent = `
-                    <div style="text-align:center;color:#fff;">
-                        <span style="font-size:11px;color:#888;">Панорама #${i}</span>
-                        <a href="${imgPath}" target="_blank">
-                            <img src="${imgPath}" style="width:100%;max-width:220px;border-radius:6px;margin-top:5px;display:block;" />
-                        </a>
-                    </div>
-                `;
-                marker.bindPopup(popupContent);
+// Функции полноэкранного просмотра панорам
+const viewer = document.getElementById('photo-viewer');
+const viewerImg = document.getElementById('viewer-img');
+const viewerCaption = document.getElementById('viewer-caption');
 
-                const thumb = document.createElement('img');
-                thumb.src = imgPath;
-                thumb.className = 'thumb-img';
-                
-                thumb.addEventListener('click', () => {
-                    const targetLat = window.innerWidth <= 768 ? latitude - 0.015 : latitude;
-                    map.setView([targetLat, longitude], 13, { animate: true });
-                    marker.openPopup();
-                    
-                    if (window.innerWidth <= 768) {
-                        document.getElementById('sidebar').classList.add('hidden');
-                    }
-                });
-
-                thumbnailsContainer.appendChild(thumb);
-            }
-        } catch (error) {
-            // Ошибка чтения или файла нет — игнорируем, чтобы не вешать поток
-        }
-    }
+function openPhoto(src, captionText) {
+    viewerImg.src = src;
+    viewerCaption.innerText = captionText;
+    viewer.style.display = "flex";
 }
 
-// Запускаем панорамы чуть позже треков, чтобы разгрузить сеть при старте
-setTimeout(loadPanoramas, 500);
+document.querySelector('.viewer-close').addEventListener('click', () => {
+    viewer.style.display = "none";
+});
+viewer.addEventListener('click', (e) => {
+    if (e.target === viewer || e.target === viewerImg) viewer.style.display = "none";
+});
 
-// Интерфейс меню
+// Отрисовка панорам
+const thumbnailsContainer = document.getElementById('thumbnails');
+
+panoramasData.forEach((photo, idx) => {
+    const imgPath = `./panoramas/${photo.file}`;
+    const marker = L.marker([photo.lat, photo.lng], { icon: photoIcon }).addTo(map);
+
+    // При клике на маркер — сразу открываем во весь экран
+    marker.on('click', () => {
+        openPhoto(imgPath, `Панорама маршрута #${idx + 1}`);
+    });
+
+    // Создание миниатюры в боковой панели
+    const thumb = document.createElement('img');
+    thumb.src = imgPath;
+    thumb.className = 'thumb-img';
+    
+    thumb.addEventListener('click', () => {
+        const targetLat = window.innerWidth <= 768 ? photo.lat - 0.015 : photo.lat;
+        map.setView([targetLat, photo.lng], 13, { animate: true });
+        
+        if (window.innerWidth <= 768) {
+            document.getElementById('sidebar').classList.add('hidden');
+        }
+        // Небольшая задержка перед открытием, чтобы карта успела долететь
+        setTimeout(() => openPhoto(imgPath, `Панорама маршрута #${idx + 1}`), 400);
+    });
+
+    thumbnailsContainer.appendChild(thumb);
+});
+
+// Логика интерфейса меню
 const sidebar = document.getElementById('sidebar');
 const closeBtn = document.getElementById('close-sidebar');
 const openBtn = document.getElementById('mobile-menu-btn');
@@ -159,9 +163,7 @@ openBtn.addEventListener('click', () => {
 });
 
 map.on('click', () => {
-    if (window.innerWidth <= 768) {
-        sidebar.classList.add('hidden');
-    }
+    if (window.innerWidth <= 768) sidebar.classList.add('hidden');
 });
 
 if (window.innerWidth > 768) {
