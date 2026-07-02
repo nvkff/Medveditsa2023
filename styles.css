@@ -36,7 +36,7 @@ body {
     display: flex;
     flex-direction: column;
     gap: 20px;
-    z-index: 9999; /* Поверх карты Жестко */
+    z-index: 999;
     box-shadow: 5px 0 15px rgba(0,0,0,0.5);
     overflow-y: auto;
     transition: transform 0.3s ease;
@@ -78,7 +78,7 @@ h1 {
     position: absolute;
     top: 15px;
     left: 15px;
-    z-index: 999;
+    z-index: 990;
     background: rgba(20, 20, 20, 0.9);
     color: #fff;
     border: 1px solid #444;
@@ -117,30 +117,113 @@ h1 {
     border-radius: 6px;
     cursor: pointer;
     border: 2px solid transparent;
+    transition: transform 0.2s, border-color 0.2s;
 }
 
-/* --- МОБИЛЬНАЯ ВЕРСИЯ (ШТОРКА СНИЗУ) --- */
+.thumb-img:hover {
+    transform: scale(1.03);
+    border-color: #4cabff;
+}
+
+/* Красивые постоянные подписи для стоянок на карте */
+.map-permanent-label {
+    background: rgba(20, 20, 20, 0.85) !important;
+    backdrop-filter: blur(4px);
+    color: #fff !important;
+    border: 1px solid #444 !important;
+    border-radius: 4px !important;
+    padding: 3px 8px !important;
+    font-size: 11px !important;
+    font-weight: 600;
+    box-shadow: 0 2px 6px rgba(0,0,0,0.3);
+}
+.map-permanent-label::before {
+    border-top-color: rgba(20, 20, 20, 0.85) !important;
+}
+
+/* --- ФУНКЦИЯ ПРОСМОТРА (ОКНО НА ВЕСЬ ЭКРАН) --- */
+.viewer-overlay {
+    display: none; /* Скрыто по умолчанию */
+    position: fixed;
+    z-index: 10000; /* Перекрывает абсолютно всё */
+    left: 0;
+    top: 0;
+    width: 100%;
+    height: 100%;
+    background-color: rgba(10, 10, 10, 0.95);
+    justify-content: center;
+    align-items: center;
+    flex-direction: column;
+}
+
+.viewer-content {
+    margin: auto;
+    display: block;
+    max-width: 95%;
+    max-height: 80vh;
+    box-shadow: 0 4px 30px rgba(0,0,0,0.7);
+    border-radius: 4px;
+}
+
+#viewer-caption {
+    margin: auto;
+    display: block;
+    width: 80%;
+    max-width: 700px;
+    text-align: center;
+    color: #ccc;
+    padding: 10px 0;
+    font-size: 14px;
+}
+
+.viewer-close {
+    position: absolute;
+    top: 20px;
+    right: 35px;
+    color: #fff;
+    font-size: 40px;
+    font-weight: bold;
+    cursor: pointer;
+    transition: color 0.2s;
+}
+
+.viewer-close:hover {
+    color: #ff2a2a;
+}
+
+/* --- АДАПТИВНОСТЬ: МОБИЛЬНЫЕ УСТРОЙСТВА --- */
 @media (max-width: 768px) {
     #sidebar {
-        top: auto; /* Сбрасываем верх привязки */
+        top: auto;
         bottom: 0;
         left: 0;
         width: 100%;
-        height: 40vh; /* Увеличили до 40% чтобы влезали превью */
+        height: 40vh;
         border-radius: 20px 20px 0 0;
         transform: translateY(0);
         box-shadow: 0 -5px 25px rgba(0,0,0,0.6);
     }
 
     #sidebar.hidden {
-        transform: translateY(100%); /* Прячем строго вниз */
+        transform: translateY(100%);
     }
 
     #thumbnails {
-        grid-template-columns: repeat(3, 1fr); /* 3 колонки на мобилках */
+        grid-template-columns: repeat(3, 1fr);
     }
     
     .thumb-img {
         height: 75px;
+    }
+
+    .viewer-close {
+        top: 15px;
+        right: 20px;
+        font-size: 35px;
+    }
+    
+    .viewer-content {
+        max-width: 100%;
+        width: 100%;
     }
 }
