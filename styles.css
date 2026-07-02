@@ -15,15 +15,43 @@ body {
 
 #sidebar {
     width: 360px;
-    background: rgba(25, 25, 25, 0.85);
+    background: rgba(25, 25, 25, 0.9);
     backdrop-filter: blur(10px);
     padding: 25px;
     display: flex;
     flex-direction: column;
     gap: 20px;
-    z-index: 1000;
+    z-index: 2000;
     box-shadow: 5px 0 15px rgba(0,0,0,0.5);
     overflow-y: auto;
+    transition: transform 0.3s ease;
+    position: relative;
+}
+
+/* Класс для сворачивания панели */
+#sidebar.collapsed {
+    transform: translateX(-100%);
+}
+
+/* Кнопка управления меню */
+.toggle-btn {
+    position: absolute;
+    top: 15px;
+    right: -50px;
+    background: #4cabff;
+    color: #fff;
+    border: none;
+    padding: 10px 15px;
+    border-radius: 0 8px 8px 0;
+    cursor: pointer;
+    font-size: 18px;
+    z-index: 2001;
+    box-shadow: 3px 0 10px rgba(0,0,0,0.3);
+    transition: background 0.2s, right 0.2s;
+}
+
+.toggle-btn:hover {
+    background: #2a8ee2;
 }
 
 h1 {
@@ -31,11 +59,18 @@ h1 {
     font-weight: 800;
     letter-spacing: -0.5px;
     color: #4cabff;
+    margin-right: 40px;
 }
 
 .subtitle {
     font-size: 14px;
     color: #aaa;
+}
+
+.hint {
+    font-size: 13px;
+    color: #888;
+    margin-top: 5px;
 }
 
 hr {
@@ -54,7 +89,7 @@ hr {
 
 #thumbnails {
     display: grid;
-    grid-template-columns: repeat(2, 110fr);
+    grid-template-columns: repeat(2, 1fr);
     gap: 10px;
     margin-top: 15px;
 }
@@ -77,19 +112,49 @@ hr {
 #map {
     flex-grow: 1;
     height: 100%;
+    width: 100%;
 }
 
-/* Стилизация попапов Leaflet под темную тему */
+/* Стилизация попапов Leaflet */
 .leaflet-popup-content-wrapper {
     background: #222 !important;
     color: #fff !important;
     border-radius: 8px !important;
+    padding: 5px;
 }
 .leaflet-popup-tip {
     background: #222 !important;
 }
 .popup-panorama {
-    width: 250px;
+    width: 100%;
+    max-width: 250px;
     border-radius: 4px;
-    margin-top: 5px;
+    margin-top: 8px;
+    display: block;
+}
+
+/* Адаптивность для мобильных устройств */
+@media (max-width: 768px) {
+    #sidebar {
+        position: fixed;
+        left: 0;
+        top: 0;
+        width: 80%;
+        max-width: 300px;
+        height: 100vh;
+    }
+
+    .toggle-btn {
+        right: 15px;
+        top: 15px;
+        border-radius: 6px;
+        box-shadow: none;
+        background: #333;
+    }
+    
+    #sidebar.collapsed .toggle-btn {
+        right: -55px;
+        background: #4cabff;
+        box-shadow: 3px 0 10px rgba(0,0,0,0.3);
+    }
 }
