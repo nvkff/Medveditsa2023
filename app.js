@@ -22,12 +22,12 @@ const gpxFiles = [
 let totalDistance = 0;
 const mapBounds = L.latLngBounds();
 
-// Загрузка GPX (Цвет изменен на КРАСНЫЙ)
+// Загрузка GPX
 gpxFiles.forEach(file => {
     new L.GPX(`./gpx/${file}`, {
         async: true,
         polyline_options: {
-            color: '#ff2a2a', // Ярко-красный цвет трека
+            color: '#ff2a2a',
             opacity: 0.85,
             weight: 5,
             lineCap: 'round'
@@ -44,37 +44,56 @@ gpxFiles.forEach(file => {
     }).addTo(map);
 });
 
-// --- ДОБАВЛЕНИЕ СТОЯНОК (ТОЧЕК) ---
+// --- КРАСИВЫЕ SVG ИКОНКИ ---
+const svgTent = `<svg viewBox="0 0 24 24" width="24" height="24" fill="#ff2a2a" stroke="#111" stroke-width="1.5"><path d="M4 19h16L12 4z"/><path d="M12 4v15M9 14l3-5 3 5"/></svg>`;
+const svgRocket = `<svg viewBox="0 0 24 24" width="24" height="24" fill="#00ff66" stroke="#111" stroke-width="1.5"><path d="M12 2s4 4 4 9H8c0-5 4-9 4-9zM8 11v4c0 2 2 4 4 4s4-2 4-4v-4M4 21h16M12 15v4"/></svg>`;
+const svgFinish = `<svg viewBox="0 0 24 24" width="24" height="24" fill="#ffcc00" stroke="#111" stroke-width="1.5"><path d="M5 21V3h14l-3 4.5 3 4.5H5"/></svg>`;
+
+function createCustomIcon(svgContent) {
+    return L.divIcon({
+        className: 'custom-svg-icon',
+        html: `<div style="display:flex; justify-content:center; align-items:center; filter: drop-shadow(0px 2px 4px rgba(0,0,0,0.5));">${svgContent}</div>`,
+        iconSize: [24, 24],
+        iconAnchor: [12, 12]
+    });
+}
+
+// --- ДАННЫЕ СТОЯНОК ---
 const camps = [
-    { name: "🚀 Старт", lat: 57.272745, lng: 36.070653 },
-    { name: "⛺ Первая ночёвка", lat: 57.264138, lng: 36.100641 },
-    { name: "⚡ Вторая ночёвка (ГЭС)", lat: 57.228429, lng: 36.162023 },
-    { name: "⛺ Третья ночёвка", lat: 57.182129, lng: 36.369453 },
-    { name: "⛺ Четвертая ночёвка", lat: 57.188709, lng: 36.587510 },
-    { name: "⛺ Пятая ночёвка", lat: 57.271229, lng: 36.757921 },
-    { name: "🏕️ Шестая ночёвка (лагерь)", lat: 57.302809, lng: 36.999370 },
-    { name: "🏁 Седьмая ночёвка (финиш)", lat: 57.252630, lng: 37.149847 }
+    { name: "Старт", lat: 57.272745, lng: 36.070653, icon: createCustomIcon(svgRocket) },
+    { name: "1-я ночёвка", lat: 57.264138, lng: 36.100641, icon: createCustomIcon(svgTent) },
+    { name: "2-я ночёвка (ГЭС)", lat: 57.228429, lng: 36.162023, icon: createCustomIcon(svgTent) },
+    { name: "3-я ночёвка", lat: 57.182129, lng: 36.369453, icon: createCustomIcon(svgTent) },
+    { name: "4-я ночёвка", lat: 57.188709, mesh: 36.587510, lng: 36.587510, icon: createCustomIcon(svgTent) },
+    { name: "5-я ночёвка", lat: 57.271229, lng: 36.757921, icon: createCustomIcon(svgTent) },
+    { name: "6-я ночёвка (лагерь)", lat: 57.302809, lng: 36.999370, icon: createCustomIcon(svgTent) },
+    { name: "7-я ночёвка (финиш)", lat: 57.252630, lng: 37.149847, icon: createCustomIcon(svgFinish) }
 ];
 
-// Стилизуем маркеры стоянок под стильный темный вид, чтобы они отличались от фото
-const campIcon = L.divIcon({
-    className: 'custom-camp-icon',
-    html: `<div style="background-color: #111; color: #ff2a2a; border: 2px solid #ff2a2a; width: 12px; height: 12px; border-radius: 50%; box-shadow: 0 0 8px rgba(255,42,42,0.6);"></div>`,
-    iconSize: [12, 12],
-    iconAnchor: [6, 6]
-});
-
-// Отрисовка стоянок на карте
+// Отрисовка стоянок с постоянными подписями
 camps.forEach(camp => {
-    L.marker([camp.lat, camp.lng], { icon: campIcon })
-        .addTo(map)
-        .bindPopup(`<b style="color: #fff; font-size: 14px;">${camp.name}</b>`, {
-            closeButton: false,
-            offset: [0, -5]
+    const marker = L.marker([camp.lat, camp.lng], { icon: camp.icon }).addTo(map);
+    
+    // Постоянная текстовая табличка поверх карты
+    marker.bindTooltip(camp.name, {
+        permanent: true,
+        direction: 'top',
+        className: 'map-permanent-label',
+        offset: [0, -10]
+    });
+
+    // При клике на точку — копируем её координаты в буфер обмена
+    marker.on('click', () => {
+        const coordsString = `${camp.lat}, ${camp.lng}`;
+        navigator.clipboard.writeText(coordsString).then(() => {
+            alert(`Координаты точки "${camp.name}" скопированы: \n${coordsString}`);
+        }).catch(err => {
+            console.error('Не удалось скопировать: ', err);
         });
+    });
 });
 
-// Загрузка панорам (1.jpg - 15.jpg)
+// --- СКОРОСТНАЯ ЗАГРУЗКА ПАНОРАМ (Последовательная) ---
 async function loadPanoramas() {
     const thumbnailsContainer = document.getElementById('thumbnails');
     const maxPhotosToCheck = 15; 
@@ -83,12 +102,14 @@ async function loadPanoramas() {
         const imgPath = `./panoramas/${i}.jpg`;
         
         try {
+            // fetch с методом HEAD проверяет существование файла до того, как exifr начнет его читать
+            const response = await fetch(imgPath, { method: 'HEAD' });
+            if (!response.ok) continue; // Если файла нет, сразу идем дальше
+
             let gps = await exifr.gps(imgPath);
             
             if (gps && gps.latitude && gps.longitude) {
                 const { latitude, longitude } = gps;
-                
-                // Для фото оставим дефолтный синий маркер Leaflet (или он заменится на ваш)
                 const marker = L.marker([latitude, longitude]).addTo(map);
                 
                 const popupContent = `
@@ -118,12 +139,13 @@ async function loadPanoramas() {
                 thumbnailsContainer.appendChild(thumb);
             }
         } catch (error) {
-            // Файл отсутствует или нет EXIF — идем дальше
+            // Ошибка чтения или файла нет — игнорируем, чтобы не вешать поток
         }
     }
 }
 
-loadPanoramas();
+// Запускаем панорамы чуть позже треков, чтобы разгрузить сеть при старте
+setTimeout(loadPanoramas, 500);
 
 // Интерфейс меню
 const sidebar = document.getElementById('sidebar');
