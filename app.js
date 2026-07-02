@@ -1,10 +1,13 @@
-const map = L.map('map', { zoomControl: window.innerWidth > 768 }).setView([56.3, 37.3], 9);
+// 1. Инициализация карты
+const map = L.map('map', { zoomControl: window.innerWidth > 768 }).setView([57.25, 36.6], 10);
 
+// Топографическая подложка
 L.tileLayer('https://{s}.tile.opentopomap.org/{z}/{x}/{y}.png', {
     maxZoom: 17,
     attribution: '&copy; OpenTopoMap'
 }).addTo(map);
 
+// Список треков Suunto
 const gpxFiles = [
     'suuntoapp-Paddling-2023-06-28T16-18-39Z-track.gpx',
     'suuntoapp-Paddling-2023-06-29T13-20-59Z-track.gpx',
@@ -19,14 +22,13 @@ const gpxFiles = [
 let totalDistance = 0;
 const mapBounds = L.latLngBounds();
 
-// Загрузка GPX с исправленными путями под GitHub Pages
+// Загрузка GPX (Цвет изменен на КРАСНЫЙ)
 gpxFiles.forEach(file => {
-    // Явно указываем относительный путь через ./
     new L.GPX(`./gpx/${file}`, {
         async: true,
         polyline_options: {
-            color: '#007bef',
-            opacity: 0.8,
+            color: '#ff2a2a', // Ярко-красный цвет трека
+            opacity: 0.85,
             weight: 5,
             lineCap: 'round'
         },
@@ -42,6 +44,36 @@ gpxFiles.forEach(file => {
     }).addTo(map);
 });
 
+// --- ДОБАВЛЕНИЕ СТОЯНОК (ТОЧЕК) ---
+const camps = [
+    { name: "🚀 Старт", lat: 57.272745, lng: 36.070653 },
+    { name: "⛺ Первая ночёвка", lat: 57.264138, lng: 36.100641 },
+    { name: "⚡ Вторая ночёвка (ГЭС)", lat: 57.228429, lng: 36.162023 },
+    { name: "⛺ Третья ночёвка", lat: 57.182129, lng: 36.369453 },
+    { name: "⛺ Четвертая ночёвка", lat: 57.188709, lng: 36.587510 },
+    { name: "⛺ Пятая ночёвка", lat: 57.271229, lng: 36.757921 },
+    { name: "🏕️ Шестая ночёвка (лагерь)", lat: 57.302809, lng: 36.999370 },
+    { name: "🏁 Седьмая ночёвка (финиш)", lat: 57.252630, lng: 37.149847 }
+];
+
+// Стилизуем маркеры стоянок под стильный темный вид, чтобы они отличались от фото
+const campIcon = L.divIcon({
+    className: 'custom-camp-icon',
+    html: `<div style="background-color: #111; color: #ff2a2a; border: 2px solid #ff2a2a; width: 12px; height: 12px; border-radius: 50%; box-shadow: 0 0 8px rgba(255,42,42,0.6);"></div>`,
+    iconSize: [12, 12],
+    iconAnchor: [6, 6]
+});
+
+// Отрисовка стоянок на карте
+camps.forEach(camp => {
+    L.marker([camp.lat, camp.lng], { icon: campIcon })
+        .addTo(map)
+        .bindPopup(`<b style="color: #fff; font-size: 14px;">${camp.name}</b>`, {
+            closeButton: false,
+            offset: [0, -5]
+        });
+});
+
 // Загрузка панорам (1.jpg - 15.jpg)
 async function loadPanoramas() {
     const thumbnailsContainer = document.getElementById('thumbnails');
@@ -55,6 +87,8 @@ async function loadPanoramas() {
             
             if (gps && gps.latitude && gps.longitude) {
                 const { latitude, longitude } = gps;
+                
+                // Для фото оставим дефолтный синий маркер Leaflet (или он заменится на ваш)
                 const marker = L.marker([latitude, longitude]).addTo(map);
                 
                 const popupContent = `
@@ -108,7 +142,6 @@ map.on('click', () => {
     }
 });
 
-// На десктопе открыто сразу, на мобилках скрыто
 if (window.innerWidth > 768) {
     sidebar.classList.remove('hidden');
 }
