@@ -7,6 +7,9 @@
     
     <!-- Leaflet CSS -->
     <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
+    <!-- Pannellum CSS (360-просмотрщик) -->
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/pannellum@2.5.6/build/pannellum.css"/>
+    
     <link href="https://fonts.googleapis.com/css2?family=Manrope:wght@400;600;800&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="styles.css">
 </head>
@@ -35,15 +38,18 @@
 
     <div id="map"></div>
 
-    <!-- Модальное окно для полноэкранного просмотра панорам -->
+    <!-- Модальное окно для СФЕРИЧЕСКОГО просмотра (Pannellum) -->
     <div id="photo-viewer" class="viewer-overlay">
         <span class="viewer-close">&times;</span>
-        <img class="viewer-content" id="viewer-img" src="" alt="Панорама крупным планом">
+        <div id="panorama-360"></div> <!-- Сюда встроится плеер панорам -->
         <div id="viewer-caption"></div>
     </div>
 
     <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/leaflet-gpx/1.7.0/gpx.min.js"></script>
+    <!-- Pannellum JS -->
+    <script src="https://cdn.jsdelivr.net/npm/pannellum@2.5.6/build/pannellum.js"></script>
+    
     <script src="app.js"></script>
 </body>
 </html>
