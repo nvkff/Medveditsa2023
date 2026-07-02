@@ -35,7 +35,7 @@ gpxFiles.forEach(file => {
     }).addTo(map);
 });
 
-// --- СТОЯНКИ ---
+// --- SVG ИКОНКИ ДЛЯ СТОЯНОК ---
 const svgTent = `<svg viewBox="0 0 24 24" width="24" height="24" fill="#ff2a2a" stroke="#111" stroke-width="1.5"><path d="M4 19h16L12 4z"/><path d="M12 4v15M9 14l3-5 3 5"/></svg>`;
 const svgRocket = `<svg viewBox="0 0 24 24" width="24" height="24" fill="#00ff66" stroke="#111" stroke-width="1.5"><path d="M12 2s4 4 4 9H8c0-5 4-9 4-9zM8 11v4c0 2 2 4 4 4s4-2 4-4v-4M4 21h16M12 15v4"/></svg>`;
 const svgFinish = `<svg viewBox="0 0 24 24" width="24" height="24" fill="#ffcc00" stroke="#111" stroke-width="1.5"><path d="M5 21V3h14l-3 4.5 3 4.5H5"/></svg>`;
@@ -71,19 +71,30 @@ camps.forEach(camp => {
     });
 });
 
-// --- ДАННЫЕ ПАНOРАМ ---
+// --- ДАННЫЕ ПАНOРАМ (ОТКОРРЕКТИРОВАННЫЕ И ОРГАНИЗОВАННЫЕ ПО ХРОНОЛОГИИ) ---
 const panoramasData = [
+    // 28 июня
+    { file: "dji_fly_20230628_171514_612_1718743637645_pano_optimized.jpg", lat: 57.272317, lng: 36.071526 },
+    { file: "dji_fly_20230628_211126_619_1718747835822_pano_optimized.jpg", lat: 57.263988, lng: 36.100785 },
+    
+    // 29 июня
+    { file: "dji_fly_20230629_210930_628_1718742455660_pano_optimized.jpg", lat: 57.229069, lng: 36.161858 },
+    
+    // 1 июля
+    { file: "dji_fly_20230701_075408_675_1718742507484_pano_optimized.jpg", lat: 57.181925, lng: 36.369517 },
+    { file: "dji_fly_20230701_075702_678_1718742531960_pano_optimized.jpg", lat: 57.182164, lng: 36.369940 },
+    { file: "dji_fly_20230701_200752_683_1718742533568_pano_optimized.jpg", lat: 57.188061, lng: 36.588817 },
+    { file: "dji_fly_20230701_200918_684_1718742535194_pano_optimized.jpg", lat: 57.188617, lng: 36.587292 },
+    
+    // 2 июля
     { file: "Dji_fly_20230702_182558_690_1718742537039_pano_optimized.jpg", lat: 57.271147, lng: 36.758015 },
+    
+    // 3 июля
     { file: "dji_fly_20230703_202238_726_1718743208552_pano_optimized.jpg", lat: 57.302488, lng: 36.999095 },
+    
+    // 4 июля
     { file: "dji_fly_20230704_112230_727_1718742538918_pano_optimized.jpg", lat: 57.301248, lng: 37.003891 },
-    { file: "dji_fly_20230704_112408_728_1718743206971_pano_optimized.jpg", lat: 57.302353, lng: 36.998754 },
-    { file: "dji_fly_20230701_200918_684_1718742535194_pano_optimized.jpg", lat: 58.741086, lng: 35.321689 },
-    { file: "dji_fly_20230701_200752_683_1718742533568_pano_optimized.jpg", lat: 58.739794, lng: 35.318858 },
-    { file: "dji_fly_20230701_075702_678_1718742531960_pano_optimized.jpg", lat: 58.740264, lng: 35.319525 },
-    { file: "dji_fly_20230701_075408_675_1718742507484_pano_optimized.jpg", lat: 58.738119, lng: 35.334064 },
-    { file: "dji_fly_20230629_210930_628_1718742455660_pano_optimized.jpg", lat: 58.591244, lng: 34.966039 },
-    { file: "dji_fly_20230628_211126_619_1718747835822_pano_optimized.jpg", lat: 58.552906, lng: 34.619097 },
-    { file: "dji_fly_20230628_171514_612_1718743637645_pano_optimized.jpg", lat: 58.530739, lng: 34.542017 }
+    { file: "dji_fly_20230704_112408_728_1718743206971_pano_optimized.jpg", lat: 57.302353, lng: 36.998754 }
 ];
 
 const photoIcon = L.divIcon({
@@ -101,12 +112,11 @@ function openPanorama360(src, captionText) {
     viewerEl.style.display = "flex";
     document.getElementById('viewer-caption').innerText = captionText;
 
-    // Уничтожаем старый плеер, если он был
     if (pViewer) {
         pViewer.destroy();
     }
 
-    // Инициализация Pannellum (крутилка 360)
+    // Инициализация Pannellum
     pViewer = pannellum.viewer('panorama-360', {
         type: 'equirectangular',
         panorama: src,
