@@ -1,0 +1,42 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Путешествие по реке Медведица</title>
+    
+    <!-- Leaflet CSS -->
+    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
+    <!-- Google Fonts для красоты -->
+    <link href="https://fonts.googleapis.com/css2?family=Manrope:wght@400;600;800&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+
+    <!-- Боковая панель -->
+    <div id="sidebar">
+        <h1>Река Медведица</h1>
+        <p class="subtitle">Летопись водного путешествия</p>
+        <hr>
+        <div id="stats">
+            <div class="stat-box"><strong>Дистанция:</strong> <span id="total-dist">--</span> км</div>
+        </div>
+        <div id="photo-gallery">
+            <h3>Панорамы маршрута</h3>
+            <p class="hint">Нажмите на точку на карте или выберите фото здесь:</p>
+            <div id="thumbnails"></div>
+        </div>
+    </div>
+
+    <!-- Контейнер для карты -->
+    <div id="map"></div>
+
+    <!-- Зависимости: Leaflet, библиотека для парсинга GPX и exifr для EXIF данных -->
+    <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/leaflet-gpx/1.7.0/gpx.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/exifr@7.1.3/dist/lite.umd.js"></script>
+    
+    <!-- Наш скрипт -->
+    <script src="app.js"></script>
+</body>
+</html>
