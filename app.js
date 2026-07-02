@@ -1,122 +1,121 @@
-// 1. Инициализация карты (ориентировочно среднее течение Медведицы)
-const map = L.map('map').setView([56.3, 37.3], 9);
+// 1. Инициализация карты
+const map = L.map('map', { zoomControl: window.innerWidth > 768 }).setView([56.3, 37.3], 9);
 
-// Использование красивой топографической карты
+// Топографическая подложка
 L.tileLayer('https://{s}.tile.opentopomap.org/{z}/{x}/{y}.png', {
     maxZoom: 17,
-    attribution: 'Map data: &copy; OpenStreetMap | Style: &copy; OpenTopoMap'
+    attribution: '&copy; OpenTopoMap'
 }).addTo(map);
 
-// --- НАСТРОЙКА ВАШИХ ФАЙЛОВ ---
-// Просто перечисляйте здесь имена файлов, которые вы закинули в папки
-const gpxFiles = ['day1.gpx', 'day2.gpx']; 
-const photoFiles = ['photo1.jpg', 'photo2.jpg']; 
-// ---------------------------------
+// Список ваших точных треков Suunto
+const gpxFiles = [
+    'suuntoapp-Paddling-2023-06-28T16-18-39Z-track.gpx',
+    'suuntoapp-Paddling-2023-06-29T13-20-59Z-track.gpx',
+    'suuntoapp-Paddling-2023-06-30T08-31-03Z-track.gpx',
+    'suuntoapp-Paddling-2023-07-01T09-02-42Z-track.gpx',
+    'suuntoapp-Paddling-2023-07-01T13-28-14Z-track.gpx',
+    'suuntoapp-Paddling-2023-07-02T08-28-28Z-track.gpx',
+    'suuntoapp-Paddling-2023-07-03T08-40-08Z-track.gpx',
+    'suuntoapp-Paddling-2023-07-05T07-05-18Z-track.gpx'
+];
 
 let totalDistance = 0;
-const bounds = L.latLngBounds();
+const mapBounds = L.latLngBounds();
 
-// 2. Загрузка и обработка GPX треков
+// Загрузка GPX
 gpxFiles.forEach(file => {
     new L.GPX(`gpx/${file}`, {
         async: true,
         polyline_options: {
-            color: '#0088ff',
+            color: '#007bef',
             opacity: 0.8,
             weight: 5,
             lineCap: 'round'
         },
-        marker_options: {
-            startIconUrl: null, // Убираем дефолтные маркеры старта/финиша
-            endIconUrl: null,
-            shadowUrl: null
-        }
+        marker_options: { startIconUrl: null, endIconUrl: null, shadowUrl: null }
     }).on('loaded', function(e) {
-        // Добавляем дистанцию текущего трека к общей
         totalDistance += e.target.get_distance() / 1000;
         document.getElementById('total-dist').innerText = totalDistance.toFixed(1);
         
-        // Расширяем границы видимости карты под этот трек
-        bounds.extend(e.target.getBounds());
-        map.fitBounds(bounds, { padding: [30, 30] });
+        mapBounds.extend(e.target.getBounds());
+        map.fitBounds(mapBounds, { padding: [40, 40] });
     }).addTo(map);
 });
 
-// 3. Чтение EXIF и вывод панорам на карту
+// Автоматический перебор панорам (проверяет файлы от 1.jpg до 15.jpg)
+// Просто переименуйте ваши фото в папке panoramas в 1.jpg, 2.jpg и т.д.
 async function loadPanoramas() {
     const thumbnailsContainer = document.getElementById('thumbnails');
+    const maxPhotosToCheck = 15; 
 
-    for (const fileName of photoFiles) {
-        const imgPath = `panoramas/${fileName}`;
+    for (let i = 1; i <= maxPhotosToCheck; i++) {
+        const imgPath = `panoramas/${i}.jpg`;
         
         try {
-            // Библиотека exifr быстро извлекает только GPS-теги, не загружая само фото целиком
+            // Быстрая проверка EXIF без загрузки тяжелого изображения
             let gps = await exifr.gps(imgPath);
             
             if (gps && gps.latitude && gps.longitude) {
                 const { latitude, longitude } = gps;
 
-                // Создаем маркер
+                // Добавляем маркер
                 const marker = L.marker([latitude, longitude]).addTo(map);
                 
-                // Наполняем попап для карты
                 const popupContent = `
-                    <div style="text-align:center; color: #fff;">
-                        <span style="font-size:12px; color:#aaa;">Панорама из EXIF</span>
+                    <div style="text-align:center;">
+                        <span style="font-size:11px; color:#888;">Медведица Панорама #${i}</span>
                         <a href="${imgPath}" target="_blank">
-                            <img src="${imgPath}" class="popup-panorama" alt="Панорама" />
+                            <img src="${imgPath}" class="popup-panorama" />
                         </a>
                     </div>
                 `;
                 marker.bindPopup(popupContent);
 
-                // Добавляем миниатюру в боковую галерею
+                // Создаем миниатюру для меню/шторки
                 const thumb = document.createElement('img');
                 thumb.src = imgPath;
                 thumb.className = 'thumb-img';
-                thumb.alt = fileName;
                 
-                // При клике на фото в меню — плавно центрируем карту и открываем маркер
                 thumb.addEventListener('click', () => {
-                    map.setView([latitude, longitude], 14, { animate: true });
+                    // На мобилках центрируем чуть выше, учитывая шторку снизу
+                    const targetLat = window.innerWidth <= 768 ? latitude - 0.02 : latitude;
+                    map.setView([targetLat, longitude], 13, { animate: true });
                     marker.openPopup();
+                    
+                    // Сворачиваем шторку на мобилках, чтобы открыть обзор
+                    if (window.innerWidth <= 768) {
+                        document.getElementById('sidebar').classList.add('hidden');
+                    }
                 });
 
                 thumbnailsContainer.appendChild(thumb);
-            } else {
-                console.warn(`В файле ${fileName} не найдены GPS координаты.`);
             }
         } catch (error) {
-            console.error(`Ошибка обработки файла ${fileName}:`, error);
+            // Если файла с таким номером нет (например, всего 5 фото из 15) — скрипт просто пойдет дальше
         }
     }
 }
 
-// Запуск парсинга фотографий
 loadPanoramas();
 
-// 4. Логика сворачивания/разворачивания боковой панели
+// --- ЛОГИКА ИНТЕРФЕЙСА (ШТОРКА / МЕНЮ) ---
 const sidebar = document.getElementById('sidebar');
-const toggleBtn = document.getElementById('toggle-sidebar');
+const closeBtn = document.getElementById('close-sidebar');
+const openBtn = document.getElementById('mobile-menu-btn');
 
-toggleBtn.addEventListener('click', () => {
-    sidebar.classList.toggle('collapsed');
-    
-    // Пересчитываем размер карты после анимации меню, чтобы избежать серых зон
-    setTimeout(() => map.invalidateSize(), 300);
+// Закрыть (скрыть) меню
+closeBtn.addEventListener('click', () => {
+    sidebar.classList.add('hidden');
 });
 
-// На мобильных устройствах скрываем панель при выборе фотографии из списка
-thumbnailsContainer = document.getElementById('thumbnails');
-thumbnailsContainer.addEventListener('click', (e) => {
-    if (e.target.tagName === 'IMG' && window.innerWidth <= 768) {
-        sidebar.classList.add('collapsed');
-        setTimeout(() => map.invalidateSize(), 300);
+// Открыть меню
+openBtn.addEventListener('click', () => {
+    sidebar.classList.remove('hidden');
+});
+
+// Дополнительно: при клике в любое место карты закрывать шторку на мобильном
+map.on('click', () => {
+    if (window.innerWidth <= 768) {
+        sidebar.classList.add('hidden');
     }
 });
-
-// Открываем панель по умолчанию, если пользователь зашел с ПК
-if (window.innerWidth > 768) {
-    sidebar.classList.remove('collapsed');
-    setTimeout(() => map.invalidateSize(), 100);
-}
