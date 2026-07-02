@@ -1,0 +1,95 @@
+* {
+    box-sizing: border-box;
+    margin: 0;
+    padding: 0;
+}
+
+body {
+    font-family: 'Manrope', sans-serif;
+    background-color: #1a1a1a;
+    color: #fff;
+    display: flex;
+    height: 100vh;
+    overflow: hidden;
+}
+
+#sidebar {
+    width: 360px;
+    background: rgba(25, 25, 25, 0.85);
+    backdrop-filter: blur(10px);
+    padding: 25px;
+    display: flex;
+    flex-direction: column;
+    gap: 20px;
+    z-index: 1000;
+    box-shadow: 5px 0 15px rgba(0,0,0,0.5);
+    overflow-y: auto;
+}
+
+h1 {
+    font-size: 24px;
+    font-weight: 800;
+    letter-spacing: -0.5px;
+    color: #4cabff;
+}
+
+.subtitle {
+    font-size: 14px;
+    color: #aaa;
+}
+
+hr {
+    border: 0;
+    height: 1px;
+    background: #444;
+}
+
+.stat-box {
+    background: #2a2a2a;
+    padding: 12px;
+    border-radius: 8px;
+    border-left: 4px solid #4cabff;
+    font-size: 15px;
+}
+
+#thumbnails {
+    display: grid;
+    grid-template-columns: repeat(2, 110fr);
+    gap: 10px;
+    margin-top: 15px;
+}
+
+.thumb-img {
+    width: 100%;
+    height: 80px;
+    object-fit: cover;
+    border-radius: 6px;
+    cursor: pointer;
+    transition: transform 0.2s, border-color 0.2s;
+    border: 2px solid transparent;
+}
+
+.thumb-img:hover {
+    transform: scale(1.05);
+    border-color: #4cabff;
+}
+
+#map {
+    flex-grow: 1;
+    height: 100%;
+}
+
+/* Стилизация попапов Leaflet под темную тему */
+.leaflet-popup-content-wrapper {
+    background: #222 !important;
+    color: #fff !important;
+    border-radius: 8px !important;
+}
+.leaflet-popup-tip {
+    background: #222 !important;
+}
+.popup-panorama {
+    width: 250px;
+    border-radius: 4px;
+    margin-top: 5px;
+}
